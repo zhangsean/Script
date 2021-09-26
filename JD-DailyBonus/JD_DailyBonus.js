@@ -688,17 +688,17 @@ function JDShakeBoxSign(s, channel) {
               merge.JDShakeBox.success = 1
               if (data.match(/dayBeanAmount/)) {
                 merge.JDShakeBox.bean = json.data.floorInfoList[0].floorData.shakingBoxInfo.dayBeanAmount || 0
-                merge.JDShakeBox.notify = `会员频道-摇盒子: 成功, 明细: ${merge.JDShakeBox.bean || `无`}京豆 🎉`
+                merge.JDShakeBox.notify = `会员频道-摇盒: 签到成功, 明细: ${merge.JDShakeBox.bean || `无`}京豆 🎉`
               } else {
-                merge.JDShakeBox.notify = `会员频道-摇盒子: 成功, 明细: ${json.resultTips || `未知`} 🐶`
+                merge.JDShakeBox.notify = `会员频道-摇盒: 签到成功, 明细: ${json.resultTips || `未知`} 🐶`
               }
             } else {
               console.log("\n" + "会员频道-摇盒子签到失败 " + Details)
               merge.JDShakeBox.fail = 1
               if (data.match(/(9006010)/)) {
-                merge.JDShakeBox.notify = "会员频道-摇盒子: 失败, 原因: 已签到 ⚠️"
+                merge.JDShakeBox.notify = "会员频道-摇盒: 签到失败, 原因: 已签到 ⚠️"
               } else {
-                merge.JDShakeBox.notify = `会员频道-摇盒子: 失败, 原因: ${data || `未知`} ⚠️`
+                merge.JDShakeBox.notify = `会员频道-摇盒: 签到失败, 原因: ${data || `未知`} ⚠️`
               }
             }
           }
