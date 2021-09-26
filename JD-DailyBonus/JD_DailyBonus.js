@@ -648,9 +648,10 @@ function JDShakeBox(s) {
         if (error) throw new Error(error)
         let Details = LogDetails ? "response:\n" + data : '';
         if (data.match(/\"currSignCursor\":\d+/)) {
-          console.log(`\n会员频道-摇盒子-查询活动成功`)
+          let cursor = data.match(/\"currSignCursor\":(\d+)/)[1]
+          console.log(`\n会员频道-摇盒子-查询活动 第${cursor}天`)
           resolve({
-            cursor: data.match(/\"currSignCursor\":(\d+)/)[1]
+            cursor: cursor
           })
         } else {
           console.log(`\n会员频道-摇盒子-查询活动失败 ${data}`)
