@@ -5,8 +5,8 @@
 更新时间: 2021.09.09 20:20 v2.1.3
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
-电报频道: @NobyDa 
-问题反馈: @NobyDa_bot 
+电报频道: @NobyDa
+问题反馈: @NobyDa_bot
 如果转载: 请注明出处
 
 *************************
@@ -21,13 +21,13 @@ Safari浏览器打开登录 https://home.m.jd.com/myJd/newhome.action 点击"我
 
 获取京东金融签到Body说明: 正确添加脚本配置后, 进入"京东金融"APP, 在"首页"点击"签到"并签到一次, 待通知提示成功即可.
 
-由于cookie的有效性(经测试网页Cookie有效周期最长31天)，如果脚本后续弹出cookie无效的通知，则需要重复上述步骤。 
+由于cookie的有效性(经测试网页Cookie有效周期最长31天)，如果脚本后续弹出cookie无效的通知，则需要重复上述步骤。
 签到脚本将在每天的凌晨0:05执行, 您可以修改执行时间。 因部分接口京豆限量领取, 建议调整为凌晨签到。
 
 BoxJs或QX Gallery订阅地址: https://raw.githubusercontent.com/NobyDa/Script/master/NobyDa_BoxJs.json
 
 *************************
-【 配置多京东账号签到说明 】 : 
+【 配置多京东账号签到说明 】 :
 *************************
 
 正确配置QX、Surge、Loon后, 并使用此脚本获取"账号1"Cookie成功后, 请勿点击退出账号(可能会导致Cookie失效), 需清除浏览器资料或更换浏览器登录"账号2"获取即可; 账号3或以上同理.
@@ -48,7 +48,7 @@ var DualKey = ''; //该参数已废弃; 仅用于下游脚本的兼容, 请使�
 
 var OtherKey = ``; //无限账号Cookie json串数据, 请严格按照json格式填写, 具体格式请看以下样例:
 
-/*以下样例为双账号("cookie"为必须,其他可选), 第一个账号仅包含Cookie, 第二个账号包含Cookie和金融签到Body: 
+/*以下样例为双账号("cookie"为必须,其他可选), 第一个账号仅包含Cookie, 第二个账号包含Cookie和金融签到Body:
 
 var OtherKey = `[{
   "cookie": "pt_key=xxx;pt_pin=yyy;"
@@ -96,10 +96,10 @@ hostname = ms.jr.jd.com, me-api.jd.com, api.m.jd.com
 5 0 * * * https://raw.githubusercontent.com/NobyDa/Script/master/JD-DailyBonus/JD_DailyBonus.js, tag=京东多合一签到, img-url=https://raw.githubusercontent.com/NobyDa/mini/master/Color/jd.png,enabled=true
 
 [rewrite_local]
-# 获取京东Cookie. 
+# 获取京东Cookie.
 ^https:\/\/(api\.m|me-api)\.jd\.com\/(client\.action\?functionId=signBean|user_new\/info\/GetJDUserInfoUnion\?) url script-request-header https://raw.githubusercontent.com/NobyDa/Script/master/JD-DailyBonus/JD_DailyBonus.js
 
-# 获取钢镚签到body. 
+# 获取钢镚签到body.
 ^https:\/\/ms\.jr\.jd\.com\/gw\/generic\/hy\/h5\/m\/appSign\? url script-request-body https://raw.githubusercontent.com/NobyDa/Script/master/JD-DailyBonus/JD_DailyBonus.js
 
 [mitm]
@@ -142,6 +142,7 @@ async function all(cookie, jrBody) {
         JingDongSubsidy(stop), //京东金贴
         JingDongGetCash(stop), //京东领现金
         JingDongShake(stop), //京东摇一摇
+        JDShakeBox(Wait(stop)), //会员频道-摇盒子
         JDSecKilling(stop), //京东秒杀
         // JingRongDoll(stop, 'JRDoll', '京东金融-签壹', '4D25A6F482'),
         // JingRongDoll(stop, 'JRThreeDoll', '京东金融-签叁', '69F5EC743C'),
@@ -193,6 +194,7 @@ async function all(cookie, jrBody) {
       await JingDongGetCash(Wait(stop)); //京东领现金
       await JingDongSubsidy(Wait(stop)); //京东金贴
       await JingDongShake(Wait(stop)); //京东摇一摇
+      await JDShakeBox(Wait(stop)); //会员频道-摇盒子
       await JDSecKilling(Wait(stop)); //京东秒杀
       // await JingRongDoll(Wait(stop), 'JRThreeDoll', '京东金融-签叁', '69F5EC743C');
       // await JingRongDoll(Wait(stop), 'JRFourDoll', '京东金融-签肆', '30C4F86264');
@@ -208,7 +210,7 @@ async function all(cookie, jrBody) {
       // await JDUserSignPre(Wait(stop), 'JDCustomized', '京东商城-定制', '2BJK5RBdvc3hdddZDS1Svd5Esj3R'); //京东定制
       await JDUserSignPre(Wait(stop), 'JDSuitcase', '京东商城-箱包', 'ZrH7gGAcEkY2gH8wXqyAPoQgk6t'); //京东箱包馆
       await JDUserSignPre(Wait(stop), 'JDClothing', '京东商城-服饰', '4RBT3H9jmgYg1k2kBnHF8NAHm7m8'); //京东服饰
-      await JDUserSignPre(Wait(stop), 'JDSchool', '京东商城-校园', '2QUxWHx5BSCNtnBDjtt5gZTq7zdZ'); //京东校园 
+      await JDUserSignPre(Wait(stop), 'JDSchool', '京东商城-校园', '2QUxWHx5BSCNtnBDjtt5gZTq7zdZ'); //京东校园
       await JDUserSignPre(Wait(stop), 'JDHealth', '京东商城-健康', 'w2oeK5yLdHqHvwef7SMMy4PL8LF'); //京东健康
       await JDUserSignPre(Wait(stop), 'JDShoes', '京东商城-鞋靴', '4RXyb1W4Y986LJW8ToqMK14BdTD'); //京东鞋靴
       await JDUserSignPre(Wait(stop), 'JDChild', '京东商城-童装', '3Af6mZNcf5m795T8dtDVfDwWVNhJ'); //京东童装馆
@@ -621,6 +623,86 @@ function JingDongShake(s) {
           }
         } catch (eor) {
           $nobyda.AnError("京东商城-摇摇", "JDShake", eor, response, data)
+        } finally {
+          resolve()
+        }
+      })
+    }, s)
+    if (out) setTimeout(resolve, out + s)
+  });
+}
+
+function JDShakeBox(s) {
+  merge.JDShakeBox = {};
+  return new Promise((resolve, reject) => {
+    if (disable("JDShakeBox")) return reject()
+    let JDUrl = {
+      url: `https://api.m.jd.com/?appid=sharkBean&functionId=pg_channel_page_data&body={"paramData":{"token":"dd2fb032-9fa3-493b-8cd0-0d57cd51812d"}}`,
+      headers: {
+        Cookie: KEY,
+        Origin: 'https://spa.jd.com'
+      }
+    };
+    $nobyda.get(JDUrl, async (error, response, data) => {
+      try {
+        if (error) throw new Error(error)
+        let Details = LogDetails ? "response:\n" + data : '';
+        if (data.match(/\"currSignCursor\":\d+/)) {
+          console.log(`\n会员频道-摇盒子-查询活动成功`)
+          resolve({
+            cursor: data.match(/\"currSignCursor\":(\d+)/)[1]
+          })
+        } else {
+          console.log(`\n会员频道-摇盒子-查询活动失败 ${data}`)
+          reject()
+        }
+      } catch (eor) {
+        $nobyda.AnError("会员频道-摇盒子-查询", "JDShakeBox", eor, response, data)
+        reject()
+      }
+    })
+    if (out) setTimeout(reject, out + s)
+  }).then(data => JDShakeBoxSign(s, data));
+}
+
+function JDShakeBoxSign(s, channel) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      let JDUrl = {
+        url: `https://api.m.jd.com/?appid=sharkBean&functionId=pg_interact_interface_invoke&body=${encodeURIComponent(`{"floorToken":"f1d574ec-b1e9-43ba-aa84-b7a757f27f0e","dataSourceCode":"signIn","argMap":{"currSignCursor":${channel.cursor}}}`)}`,
+        headers: {
+          Cookie: KEY,
+          Origin: 'https://spa.jd.com'
+        }
+      };
+      $nobyda.post(JDUrl, function(error, response, data) {
+        try {
+          if (error) {
+            throw new Error(error)
+          } else {
+            let Details = LogDetails ? "response:\n" + data : '';
+            let json = JSON.parse(data)
+            if (data.match(/\"success\":true/)) {
+              console.log("\n" + "会员频道-摇盒子签到成功 " + Details)
+              merge.JDShakeBox.success = 1
+              if (data.match(/dayBeanAmount/)) {
+                merge.JDShakeBox.bean = json.data.floorInfoList[0].floorData.shakingBoxInfo.dayBeanAmount || 0
+                merge.JDShakeBox.notify = `会员频道-摇盒子: 成功, 明细: ${merge.JDShakeBox.bean || `无`}京豆 🎉`
+              } else {
+                merge.JDShakeBox.notify = `会员频道-摇盒子: 成功, 明细: ${json.resultTips || `未知`} 🐶`
+              }
+            } else {
+              console.log("\n" + "会员频道-摇盒子签到失败 " + Details)
+              merge.JDShakeBox.fail = 1
+              if (data.match(/(9006010)/)) {
+                merge.JDShakeBox.notify = "会员频道-摇盒子: 失败, 原因: 已签到 ⚠️"
+              } else {
+                merge.JDShakeBox.notify = `会员频道-摇盒子: 失败, 原因: ${data || `未知`} ⚠️`
+              }
+            }
+          }
+        } catch (eor) {
+          $nobyda.AnError("会员频道-摇盒子", "JDShakeBox", eor, response, data)
         } finally {
           resolve()
         }
