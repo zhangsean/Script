@@ -1,0 +1,63 @@
+#
+# This is free software, lisence use MIT.
+#
+# Copyright (C) 2020 KFERMercer <KFER.Mercer@gmail.com>
+# Copyright (C) 2021 zhangsean <zxf2342@qq.com>
+#
+# <https://github.com/KFERMercer/OpenWrt-CI>
+#
+
+name: Auto-merge-upstream
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/merge-upstream.yml
+  schedule:
+    - cron: 50 23 * * *
+  watch:
+    types: [started]
+  release:
+    types: [published]
+
+jobs:
+
+  merge:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: master
+        fetch-depth: 0
+        lfs: true
+
+    - name: Set git identity
+      run : |
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
+
+    - name: Load upstream commits
+      run: |
+        export API_URL=$GITHUB_API_URL/repos/$GITHUB_REPOSITORY
+        echo API_URL=$API_URL
+        export UPSTREAM_REPO=`curl -sS $API_URL | jq -r .parent.html_url`
+        echo UPSTREAM_REPO=$UPSTREAM_REPO
+        git pull $UPSTREAM_REPO --log --no-commit
+        if [ -f ./.git/MERGE_MSG ]; then
+          echo "MERGE=1" >> $GITHUB_ENV
+        fi
+
+    - name: Apply commit changes
+      if: success() && env.MERGE == 1
+      run: |
+        cp ./.git/MERGE_MSG /tmp/message
+        sed -i "1c [bot] Auto merging from upstream" /tmp/message
+        sed -i '/^\#.*/d' /tmp/message
+        git commit --file=/tmp/message
+        git push
