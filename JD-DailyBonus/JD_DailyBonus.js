@@ -2,7 +2,7 @@
 
 京东多合一签到脚本
 
-更新时间: 2021.09.25 17:15 v2.2.3
+更新时间: 2021.09.27 09:24 v2.2.4
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 电报频道: @NobyDa
@@ -755,6 +755,7 @@ function JDShakeBoxDoTask(s, tasks, i) {
       } else {
         JDShakeBoxLottery(s)
       }
+      resolve()
     } else {
         setTimeout(() => {
           let JDUrl = {
@@ -830,7 +831,7 @@ function JDShakeBoxLottery(s) {
               merge.JDShakeBoxLottery.success += 1
               if (json.data.rewardBeanAmount) {
                 merge.JDShakeBoxLottery.bean += json.data.rewardBeanAmount || 0
-                merge.JDShakeBoxLottery.notify += `${also?"\n":''}会员频道-摇盒: ${also?'多次':'成功'}, 明细: ${json.data.rewardBeanAmount || '无'}京豆 🎉`
+                merge.JDShakeBoxLottery.notify += `${also?"\n":''}会员频道-摇盒: ${also?'多次':'成功'}, 合计: ${merge.JDShakeBoxLottery.bean || 0}京豆 🎉`
               } else if (json.data.couponInfo.couponQuota) {
                 merge.JDShakeBoxLottery.notify += `${also?"\n":''}会员频道-摇盒: ${also?'多次':'成功'}, 获得满${json.data.couponInfo.couponQuota}减${json.data.couponInfo.couponDiscount}优惠券→ ${json.data.couponInfo.limitStr} 🐶`
               } else {
@@ -840,7 +841,7 @@ function JDShakeBoxLottery(s) {
                 await JDShakeBoxLottery(s)
               }
             } else {
-              console.log(`\n会员频道-摇盒子-抽奖失败 ${Details || data}`)
+              console.log(`\n会员频道-摇盒子-抽奖失败 ${Details}`)
               merge.JDShakeBoxLottery.fail = 1
               if (data.match(/(9005004)/)) {
                 merge.JDShakeBoxLottery.notify = "会员频道-摇盒: 失败, 原因: 抽奖次数用完 ⚠️"
