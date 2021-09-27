@@ -2,7 +2,7 @@
 
 京东多合一签到脚本
 
-更新时间: 2021.09.09 20:20 v2.1.3
+更新时间: 2021.09.25 17:15 v2.2.3
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 电报频道: @NobyDa
@@ -141,8 +141,8 @@ async function all(cookie, jrBody) {
         JDMagicCube(stop, 2), //京东小魔方
         JingDongSubsidy(stop), //京东金贴
         JingDongGetCash(stop), //京东领现金
-        JingDongShake(stop), //京东摇一摇
         JDShakeBox(Wait(stop)), //会员频道-摇盒子
+        JingDongShake(stop), //京东摇一摇
         JDSecKilling(stop), //京东秒杀
         // JingRongDoll(stop, 'JRDoll', '京东金融-签壹', '4D25A6F482'),
         // JingRongDoll(stop, 'JRThreeDoll', '京东金融-签叁', '69F5EC743C'),
@@ -193,8 +193,8 @@ async function all(cookie, jrBody) {
       await JDMagicCube(Wait(stop), 2); //京东小魔方
       await JingDongGetCash(Wait(stop)); //京东领现金
       await JingDongSubsidy(Wait(stop)); //京东金贴
-      await JingDongShake(Wait(stop)); //京东摇一摇
       await JDShakeBox(Wait(stop)); //会员频道-摇盒子
+      await JingDongShake(Wait(stop)); //京东摇一摇
       await JDSecKilling(Wait(stop)); //京东秒杀
       // await JingRongDoll(Wait(stop), 'JRThreeDoll', '京东金融-签叁', '69F5EC743C');
       // await JingRongDoll(Wait(stop), 'JRFourDoll', '京东金融-签肆', '30C4F86264');
@@ -649,7 +649,7 @@ function JDShakeBox(s) {
         let Details = LogDetails ? "response:\n" + data : '';
         if (data.match(/\"currSignCursor\":\d+/)) {
           let cursor = data.match(/\"currSignCursor\":(\d+)/)[1]
-          console.log(`\n会员频道-摇盒子-查询活动 第${cursor}天`)
+          console.log(`\n会员频道-摇盒子-查询活动 第${cursor}天 ${Details}`)
           resolve({
             cursor: cursor
           })
@@ -658,7 +658,7 @@ function JDShakeBox(s) {
           reject()
         }
       } catch (eor) {
-        $nobyda.AnError("会员频道-摇盒子-查询", "JDShakeBox", eor, response, data)
+        $nobyda.AnError("会员频道-摇盒子-查询活动", "JDShakeBox", eor, response, data)
         reject()
       }
     })
@@ -684,7 +684,7 @@ function JDShakeBoxSign(s, channel) {
             let Details = LogDetails ? "response:\n" + data : '';
             let json = JSON.parse(data)
             if (data.match(/\"success\":true/)) {
-              console.log("\n" + "会员频道-摇盒子签到成功 " + Details)
+              console.log("\n" + "会员频道-摇盒子-签到成功 " + Details)
               merge.JDShakeBox.success = 1
               if (data.match(/dayBeanAmount/)) {
                 merge.JDShakeBox.bean = json.data.floorInfoList[0].floorData.shakingBoxInfo.dayBeanAmount || 0
@@ -693,7 +693,7 @@ function JDShakeBoxSign(s, channel) {
                 merge.JDShakeBox.notify = `会员频道-摇盒: 签到成功, 明细: ${json.resultTips || `未知`} 🐶`
               }
             } else {
-              console.log("\n" + "会员频道-摇盒子签到失败 " + Details)
+              console.log("\n" + "会员频道-摇盒子-签到失败 " + Details)
               merge.JDShakeBox.fail = 1
               if (data.match(/(9006010)/)) {
                 merge.JDShakeBox.notify = "会员频道-摇盒: 签到失败, 原因: 已签到 ⚠️"
@@ -704,6 +704,155 @@ function JDShakeBoxSign(s, channel) {
           }
         } catch (eor) {
           $nobyda.AnError("会员频道-摇盒子", "JDShakeBox", eor, response, data)
+        } finally {
+          resolve()
+        }
+      })
+    }, s)
+    if (out) setTimeout(resolve, out + s)
+  }).then(() => JDShakeBoxTask(s));
+}
+
+function JDShakeBoxTask(s) {
+  merge.JDShakeBoxTask = {};
+  return new Promise((resolve, reject) => {
+    if (disable("JDShakeBox")) return reject()
+    let JDUrl = {
+      url: `https://api.m.jd.com/?appid=vip_h5&functionId=vvipclub_lotteryTask&body={"info":"browseTask","withItem":true}`,
+      headers: {
+        Cookie: KEY
+      }
+    };
+    $nobyda.get(JDUrl, async (error, response, data) => {
+      try {
+        if (error) throw new Error(error)
+        let Details = LogDetails ? "response:\n" + data : '';
+        if (data.match(/\"success\":true/)) {
+          let json = JSON.parse(data)
+          let tasks = json.data[0].taskItems || [];
+          console.log(`\n会员频道-摇盒子-获取奖励任务 ${tasks.length}个 ${Details}`)
+          resolve(tasks)
+        } else {
+          console.log(`\n会员频道-摇盒子-获取奖励任务失败 ${data}`)
+          reject()
+        }
+      } catch (eor) {
+        $nobyda.AnError("会员频道-摇盒子-获取奖励任务", "JDShakeBoxTask", eor, response, data)
+        reject()
+      }
+    })
+    if (out) setTimeout(reject, out + s)
+  }).then(data => JDShakeBoxDoTask(s, data, 0));
+}
+
+function JDShakeBoxDoTask(s, tasks, i) {
+  return new Promise(resolve => {
+    let task = tasks[i];
+    if (task.finish) {
+      console.log(`\n会员频道-摇盒子-领取抽奖次数: 已领取, 任务: ${task.title}`)
+      if (i < tasks.length - 1) {
+        JDShakeBoxDoTask(s, tasks, ++i)
+      } else {
+        JDShakeBoxLottery(s)
+      }
+    } else {
+        setTimeout(() => {
+          let JDUrl = {
+            url: `https://api.m.jd.com/?appid=vip_h5&functionId=vvipclub_doTask&body={"taskName":"browseTask","taskItemId":${task.id}}`,
+            headers: {
+              Cookie: KEY,
+            }
+          };
+          $nobyda.get(JDUrl, function(error, response, data) {
+            try {
+              if (error) {
+                throw new Error(error)
+              } else {
+                let Details = LogDetails ? "response:\n" + data : '';
+                let json = JSON.parse(data)
+                if (data.match(/\"success\":true/)) {
+                  console.log(`\n会员频道-摇盒子-领取抽奖次数成功, 任务: ${task.title} ${Details}`)
+                  merge.JDShakeBoxTask.success += 1
+                  if (data.match(/currentFinishTimes/)) {
+                    merge.JDShakeBoxTask.notify = `会员频道-摇盒: 领取抽奖次数成功, 明细: ${json.data.browseTask.currentFinishTimes || 0}次 🎉`
+                  } else {
+                    merge.JDShakeBoxTask.notify = `会员频道-摇盒: 领取抽奖次数成功, 明细: ${json.resultTips || '未知'} 🐶`
+                  }
+                } else {
+                  console.log(`\n会员频道-摇盒子-领取抽奖次数失败, 任务: ${task.title} ${Details || data}`)
+                  merge.JDShakeBoxTask.fail += 1
+                  if (data.match(/(9000006)/)) {
+                    merge.JDShakeBoxTask.notify += "会员频道-摇盒: 领取抽奖次数失败, 原因: 已签到 ⚠️"
+                  } else {
+                    merge.JDShakeBoxTask.notify += `会员频道-摇盒: 领取抽奖次数失败, 原因: ${json.resultCode || '0'} ${json.resultTips || '未知'} ⚠️`
+                  }
+                }
+                if (i < tasks.length - 1) {
+                  JDShakeBoxDoTask(s, tasks, ++i)
+                } else {
+                  JDShakeBoxLottery(s)
+                }
+              }
+            } catch (eor) {
+              $nobyda.AnError("会员频道-摇盒子", "JDShakeBox", eor, response, data)
+            } finally {
+              resolve()
+            }
+          })
+        }, s)
+        if (out) setTimeout(resolve, out + s)
+    }
+  });
+}
+
+function JDShakeBoxLottery(s) {
+  if (!merge.JDShakeBoxLottery) merge.JDShakeBoxLottery = {}, merge.JDShakeBoxLottery.success = 0, merge.JDShakeBoxLottery.bean = 0, merge.JDShakeBoxLottery.notify = '';
+  return new Promise(resolve => {
+    if (disable("JDShakeBoxLottery")) return resolve()
+    setTimeout(() => {
+      const JDSh = {
+        url: 'https://api.m.jd.com/?appid=sharkBean&functionId=vvipclub_shaking_lottery&body={}',
+        headers: {
+          Cookie: KEY,
+          Origin: 'https://spa.jd.com'
+        }
+      };
+      $nobyda.post(JDSh, async function(error, response, data) {
+        try {
+          if (error) {
+            throw new Error(error)
+          } else {
+            let Details = LogDetails ? "response:\n" + data : '';
+            let json = JSON.parse(data)
+            let also = merge.JDShakeBoxLottery.notify ? true : false
+            if (data.match(/\"success\":true/)) {
+              console.log("\n" + "会员频道-摇盒子-抽奖成功 " + Details)
+              merge.JDShakeBoxLottery.success += 1
+              if (json.data.rewardBeanAmount) {
+                merge.JDShakeBoxLottery.bean += json.data.rewardBeanAmount || 0
+                merge.JDShakeBoxLottery.notify += `${also?"\n":''}会员频道-摇盒: ${also?'多次':'成功'}, 明细: ${json.data.rewardBeanAmount || '无'}京豆 🎉`
+              } else if (json.data.couponInfo.couponQuota) {
+                merge.JDShakeBoxLottery.notify += `${also?"\n":''}会员频道-摇盒: ${also?'多次':'成功'}, 获得满${json.data.couponInfo.couponQuota}减${json.data.couponInfo.couponDiscount}优惠券→ ${json.data.couponInfo.limitStr} 🐶`
+              } else {
+                merge.JDShakeBoxLottery.notify += `${also?"\n":''}会员频道-摇盒: ${also?'多次':'成功'}, 明细: 未知 ⚠️ ${data}`
+              }
+              if (json.data.remainLotteryTimes > 0) {
+                await JDShakeBoxLottery(s)
+              }
+            } else {
+              console.log(`\n会员频道-摇盒子-抽奖失败 ${Details || data}`)
+              merge.JDShakeBoxLottery.fail = 1
+              if (data.match(/(9005004)/)) {
+                merge.JDShakeBoxLottery.notify = "会员频道-摇盒: 失败, 原因: 抽奖次数用完 ⚠️"
+              } else if (data.match(/(未登录|101)/)) {
+                merge.JDShakeBoxLottery.notify = "会员频道-摇盒: 失败, 原因: Cookie失效‼️"
+              } else {
+                merge.JDShakeBoxLottery.notify += `${also?`\n`:``}会员频道-摇盒: ${also?`多次`:`成功`}, 原因: 未知 ⚠️ ${data}`
+              }
+            }
+          }
+        } catch (eor) {
+          $nobyda.AnError("会员频道-摇盒", "JDShakeBoxLottery", eor, response, data)
         } finally {
           resolve()
         }
