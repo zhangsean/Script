@@ -834,6 +834,8 @@ function JDShakeBoxLottery(s) {
                 merge.JDShakeBoxLottery.notify += `${also?"\n":''}会员频道-摇盒: ${also?'多次':'成功'}, 合计: ${merge.JDShakeBoxLottery.bean || 0}京豆 🎉`
               } else if (json.data.couponInfo.couponQuota) {
                 merge.JDShakeBoxLottery.notify += `${also?"\n":''}会员频道-摇盒: ${also?'多次':'成功'}, 获得满${json.data.couponInfo.couponQuota}减${json.data.couponInfo.couponDiscount}优惠券→ ${json.data.couponInfo.limitStr} 🐶`
+              } else if (json.data.advertInfo.h5Url) {
+                merge.JDShakeBoxLottery.notify += `${also?"\n":''}会员频道-摇盒: ${also?'多次':'成功'}, 第三方活动: 类型${json.data.lotteryType}, 链接: ${json.data.advertInfo.h5Url} 🐶`
               } else {
                 merge.JDShakeBoxLottery.notify += `${also?"\n":''}会员频道-摇盒: ${also?'多次':'成功'}, 明细: 未知 ⚠️ ${data}`
               }
