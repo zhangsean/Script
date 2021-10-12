@@ -187,17 +187,13 @@ async function all(cookie, jrBody) {
     default:
       await JingDongBean(0); //京东京豆
       await JingDongStore(Wait(stop)); //京东超市
-      await JingRongSteel(Wait(stop), jrBody); //金融钢镚
       await JingDongTurn(Wait(stop)); //京东转盘
       await JDFlashSale(Wait(stop)); //京东闪购
       await JingDongCash(Wait(stop)); //京东现金红包
       await JDMagicCube(Wait(stop), 2); //京东小魔方
       await JingDongGetCash(Wait(stop)); //京东领现金
       await JingDongSubsidy(Wait(stop)); //京东金贴
-      await JDShakeBox(Wait(stop)); //会员频道-摇盒子
-      await JingDongShake(Wait(stop)); //京东摇一摇
       await JDSecKilling(Wait(stop)); //京东秒杀
-      await JDBeanHomeTask(Wait(stop)); //五签领京豆
       // await JingRongDoll(Wait(stop), 'JRThreeDoll', '京东金融-签叁', '69F5EC743C');
       // await JingRongDoll(Wait(stop), 'JRFourDoll', '京东金融-签肆', '30C4F86264');
       // await JingRongDoll(Wait(stop), 'JRFiveDoll', '京东金融-签伍', '1D06AA3B0F');
@@ -230,7 +226,11 @@ async function all(cookie, jrBody) {
       await JDUserSignPre(Wait(stop), 'JDJiaDian', '京东商城-家电', '3uvPyw1pwHARGgndatCXddLNUxHw'); // 京东小家电馆
       // await JDUserSignPre(Wait(stop), 'ReceiveJD', '京东商城-领豆', 'Ni5PUSK7fzZc4EKangHhqPuprn2'); //京东-领京豆
       // await JDUserSignPre(Wait(stop), 'JDJewels', '京东商城-珠宝', 'zHUHpTHNTaztSRfNBFNVZscyFZU'); //京东珠宝馆
+      await JingRongSteel(Wait(stop), jrBody); //金融钢镚
       await JingRongDoll(Wait(stop), 'JDDouble', '金融京豆-双签', 'F68B2C3E71', '', '', '', 'jingdou'); //京东金融 京豆双签
+      await JDShakeBox(Wait(stop)); //会员频道-摇盒子
+      await JingDongShake(Wait(stop)); //京东摇一摇
+      await JDBeanHomeTask(Wait(stop)); //五签领京豆
       break;
   }
   await Promise.all([
