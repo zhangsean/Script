@@ -2,7 +2,7 @@
 
 京东多合一签到脚本
 
-更新时间: 2021.10.08 16:10 v2.2.5
+更新时间: 2021.10.12 14:43 v2.3.0
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 电报频道: @NobyDa
@@ -144,6 +144,7 @@ async function all(cookie, jrBody) {
         JDShakeBox(Wait(stop)), //会员频道-摇盒子
         JingDongShake(stop), //京东摇一摇
         JDSecKilling(stop), //京东秒杀
+        JDBeanHomeTask(stop), //五签领京豆
         // JingRongDoll(stop, 'JRDoll', '京东金融-签壹', '4D25A6F482'),
         // JingRongDoll(stop, 'JRThreeDoll', '京东金融-签叁', '69F5EC743C'),
         // JingRongDoll(stop, 'JRFourDoll', '京东金融-签肆', '30C4F86264'),
@@ -196,6 +197,7 @@ async function all(cookie, jrBody) {
       await JDShakeBox(Wait(stop)); //会员频道-摇盒子
       await JingDongShake(Wait(stop)); //京东摇一摇
       await JDSecKilling(Wait(stop)); //京东秒杀
+      await JDBeanHomeTask(Wait(stop)); //五签领京豆
       // await JingRongDoll(Wait(stop), 'JRThreeDoll', '京东金融-签叁', '69F5EC743C');
       // await JingRongDoll(Wait(stop), 'JRFourDoll', '京东金融-签肆', '30C4F86264');
       // await JingRongDoll(Wait(stop), 'JRFiveDoll', '京东金融-签伍', '1D06AA3B0F');
@@ -856,6 +858,114 @@ function JDShakeBoxLottery(s) {
           }
         } catch (eor) {
           $nobyda.AnError("会员频道-摇盒", "JDShakeBoxLottery", eor, response, data)
+        } finally {
+          resolve()
+        }
+      })
+    }, s)
+    if (out) setTimeout(resolve, out + s)
+  });
+}
+
+function JDBeanHomeTask(s, i) {
+  if (!merge.JDBeanHomeTask) merge.JDBeanHomeTask = {}, merge.JDBeanHomeTask.success = 0, merge.JDBeanHomeTask.bean = 0, merge.JDBeanHomeTask.notify = '';
+  let channels = ['3', '4_5201557195', '4_5201557196', '4_5201557197', '4_5201557198'];
+  i = i || 0;
+  return new Promise(resolve => {
+    let channel = channels[i];
+    setTimeout(() => {
+      let JDUrl = {
+        url: `https://api.m.jd.com/client.action?functionId=beanHomeTask&appid=ld&body={"type":"${channel}","source":"home","awardFlag":false,"itemId":"${channel == '3' ? 'zddd' : channel.replace('4_', '')}"}`,
+        headers: {
+          Cookie: KEY
+        }
+      };
+      $nobyda.get(JDUrl, function(error, response, data) {
+        try {
+          if (error) {
+            throw new Error(error)
+          } else {
+            let Details = LogDetails ? "response:\n" + data : '';
+            let json = JSON.parse(data)
+            if (data.match(/taskProgress/)) {
+              merge.JDBeanHomeTask.success += 1
+              console.log("\n" + "会员频道-五签-签到成功 " + Details)
+              merge.JDBeanHomeTask.notify = `会员频道-五签: 签到成功, 明细: ${json.data.taskProgress}/5 🎉`
+            } else {
+              console.log("\n" + "会员频道-五签-签到失败 " + data)
+              merge.JDBeanHomeTask.fail += 1
+              if (data.match(/HT205/)) {
+                merge.JDBeanHomeTask.notify = "会员频道-五签: 签到失败, 原因: 已签到 ❌"
+              } else {
+                let msg = '未知';
+                if (!!json.data) {
+                  msg = json.data.errorMessage
+                } else if (!!json.errorMessage) {
+                  msg = json.errorMessage
+                }
+                merge.JDBeanHomeTask.notify = `会员频道-五签: 签到失败, 原因: ${msg} ❌`
+              }
+            }
+          }
+        } catch (eor) {
+          $nobyda.AnError("会员频道-五签", "JDBeanHomeTask", eor, response, data)
+        } finally {
+          resolve()
+        }
+      })
+    }, s + 2000)
+    if (out) setTimeout(resolve, out + s)
+  }).then(() => {
+    if (i < channels.length - 1) {
+      return JDBeanHomeTask(s, ++i)
+    } else {
+      return JDBeanHomeTaskAward(s)
+    }
+  });
+}
+
+function JDBeanHomeTaskAward(s) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      let JDUrl = {
+        url: `https://api.m.jd.com/client.action?functionId=beanHomeTask&appid=ld&body={"source":"home","awardFlag":true}`,
+        headers: {
+          Cookie: KEY,
+          Origin: 'https://spa.jd.com'
+        }
+      };
+      $nobyda.post(JDUrl, function(error, response, data) {
+        try {
+          if (error) {
+            throw new Error(error)
+          } else {
+            let Details = LogDetails ? "response:\n" + data : '';
+            let json = JSON.parse(data)
+            if (data.match(/beanNum/)) {
+              merge.JDBeanHomeTask.success += 1
+              console.log("\n" + "会员频道-五签-领豆成功 " + Details)
+              merge.JDBeanHomeTask.notify = `会员频道-五签: 领豆成功, 明细: ${json.data.beanNum} 京豆 🎉`
+            } else {
+              console.log("\n" + "会员频道-五签-领豆失败 " + data)
+              merge.JDBeanHomeTask.fail += 1
+              if (data.match(/errorCode/)) {
+                let msg = json.errorMessage;
+                switch (json.errorCode) {
+                  case 'HT201':
+                    msg = '已领豆'
+                    break;
+                  case 'HT202':
+                    msg = '未五签'
+                    break;
+                }
+                merge.JDBeanHomeTask.notify = `会员频道-五签: 领豆失败, 原因: ${msg} ❌`
+              } else {
+                merge.JDBeanHomeTask.notify = `会员频道-五签: 领豆失败, 原因: 未知 ❌`
+              }
+            }
+          }
+        } catch (eor) {
+          $nobyda.AnError("会员频道-五签", "JDBeanHomeTask", eor, response, data)
         } finally {
           resolve()
         }
