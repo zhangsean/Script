@@ -2,7 +2,7 @@
 
 京东多合一签到脚本
 
-更新时间: 2021.10.12 17:47 v2.3.1
+更新时间: 2021.10.23 23:2 v2.3.3
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 电报频道: @NobyDa
@@ -688,8 +688,8 @@ function JDShakeBoxSign(s, channel) {
             if (data.match(/\"success\":true/)) {
               console.log("\n" + "会员频道-摇盒子-签到成功 " + Details)
               merge.JDShakeBox.success = 1
-              if (data.match(/dayBeanAmount/)) {
-                merge.JDShakeBox.bean = json.data.floorInfoList[0].floorData.shakingBoxInfo.dayBeanAmount || 0
+              if (data.match(/beanNum/)) {
+                merge.JDShakeBox.bean = json.data.rewardVos[0].jingBeanVo.beanNum || 0
                 merge.JDShakeBox.notify = `会员频道-摇盒: 签到成功, 明细: ${merge.JDShakeBox.bean || `无`}京豆 🎉`
               } else {
                 merge.JDShakeBox.notify = `会员频道-摇盒: 签到成功, 明细: ${json.resultTips || `未知`} 🐶`
@@ -943,6 +943,7 @@ function JDBeanHomeTaskAward(s) {
             let json = JSON.parse(data)
             if (data.match(/beanNum/)) {
               merge.JDBeanHomeTask.success += 1
+              merge.JDBeanHomeTask.bean += json.data.beanNum || 0
               console.log("\n" + "会员频道-五签-领豆成功 " + Details)
               merge.JDBeanHomeTask.notify = `会员频道-五签: 领豆成功, 明细: ${json.data.beanNum} 京豆 🎉`
             } else {
