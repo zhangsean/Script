@@ -48,7 +48,7 @@ jobs:
         echo API_URL=$API_URL
         export UPSTREAM_REPO=`curl -sS $API_URL | jq -r .parent.html_url`
         echo UPSTREAM_REPO=$UPSTREAM_REPO
-        git pull $UPSTREAM_REPO
+        git pull $UPSTREAM_REPO --rebase
         if [ -f ./.git/MERGE_MSG ]; then
           echo "MERGE=1" >> $GITHUB_ENV
         fi
