@@ -2,7 +2,7 @@
 
 京东多合一签到脚本
 
-更新时间: 2021.10.23 23:2 v2.3.3
+更新时间: 2021.10.26 10:18 v2.3.4
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 电报频道: @NobyDa
@@ -810,6 +810,7 @@ function JDShakeBoxDoTask(s, tasks, i) {
 
 function JDShakeBoxLottery(s) {
   if (!merge.JDShakeBoxLottery) merge.JDShakeBoxLottery = {}, merge.JDShakeBoxLottery.success = 0, merge.JDShakeBoxLottery.bean = 0, merge.JDShakeBoxLottery.notify = '';
+  let remainLotteryTimes = 0;
   return new Promise(resolve => {
     if (disable("JDShakeBoxLottery")) return resolve()
     setTimeout(() => {
@@ -841,9 +842,7 @@ function JDShakeBoxLottery(s) {
               } else {
                 merge.JDShakeBoxLottery.notify += `${also?"\n":''}会员频道-摇盒: ${also?'多次':'成功'}, 明细: 未知 ⚠️ ${data}`
               }
-              if (json.data.remainLotteryTimes > 0) {
-                await JDShakeBoxLottery(s)
-              }
+              remainLotteryTimes = json.data.remainLotteryTimes;
             } else {
               console.log(`\n会员频道-摇盒子-抽奖失败 ${Details}`)
               merge.JDShakeBoxLottery.fail = 1
@@ -864,7 +863,11 @@ function JDShakeBoxLottery(s) {
       })
     }, s)
     if (out) setTimeout(resolve, out + s)
-  });
+  }).then(()=>{
+    if (remainLotteryTimes > 0) {
+      return JDShakeBoxLottery(s)
+    }
+  });;
 }
 
 function JDBeanHomeTask(s, i) {
