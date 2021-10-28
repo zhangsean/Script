@@ -50,7 +50,7 @@ jobs:
         # git fetch up
         git version
         # git merge up/$PARENT_BRANCH
-        git pull $PARENT_BRANCH
+        git pull $PARENT_REPO
         if [ -f ./.git/MERGE_MSG ]; then
           echo "MERGE=1" >> $GITHUB_ENV
         fi
