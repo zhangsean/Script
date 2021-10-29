@@ -46,11 +46,11 @@ jobs:
         export PARENT_BRANCH=`curl -sS $API_URL | jq -r .parent.default_branch`
         echo PARENT_REPO=$PARENT_REPO
         echo PARENT_BRANCH=$PARENT_BRANCH
-        # git remote add up $PARENT_REPO
-        # git fetch up
+        git remote add up $PARENT_REPO
+        git fetch up
         git version
-        # git merge up/$PARENT_BRANCH
-        git pull $PARENT_REPO
+        git merge up/$PARENT_BRANCH --allow-unrelated-histories
+        # git pull $PARENT_REPO
         if [ -f ./.git/MERGE_MSG ]; then
           echo "MERGE=1" >> $GITHUB_ENV
         fi
