@@ -2,7 +2,7 @@
 
 京东多合一签到脚本
 
-更新时间: 2021.10.26 10:18 v2.3.4
+更新时间: 2021.12.08 17:03 v2.3.5
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 电报频道: @NobyDa
@@ -238,7 +238,8 @@ async function all(cookie, jrBody) {
     TotalCash(), //总红包查询
     TotalBean(), //总京豆查询
     TotalSubsidy(), //总金贴查询
-    TotalMoney() //总现金查询
+    TotalMoney(), //总现金查询
+    BeanDetail(), //京豆详情:签到时长,临近过期
   ]);
   await notify(); //通知模块
 }
@@ -284,18 +285,20 @@ function notify() {
       var three = TCash || TSubsidy || TMoney ? `【其他奖励】:  ${TCash+TSubsidy+TMoney}\n` : ``
       var four = `【账号总计】:  ${beans+Steel}${beans||Steel?`\n`:`获取失败\n`}`
       var five = `【其他总计】:  ${Subsidy+Money+Cash}${Subsidy||Money||Cash?`\n`:`获取失败\n`}`
+      var exp = `【即将过期】:  ${merge.ExpiringInfo||'获取失败'}\n`
+      var sign = `【连签天数】:  ${merge.SignInfo||'获取失败'}\n`
       var DName = merge.TotalBean && merge.TotalBean.nickname ? merge.TotalBean.nickname : "获取失败"
       var cnNum = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
       const Name = DualKey || OtherKey.length > 1 ? `【签到号${cnNum[$nobyda.num]||$nobyda.num}】:  ${DName}\n` : ``
       const disables = $nobyda.read("JD_DailyBonusDisables")
       const amount = disables ? disables.split(",").length : 0
       const disa = !notify || amount ? `【温馨提示】:  检测到${$nobyda.disable?`上次执行意外崩溃, `:``}已禁用${notify?`${amount}个`:`所有`}接口, 如需开启请前往BoxJs或查看脚本内第118行注释.\n` : ``
-      $nobyda.notify("", "", Name + one + two + three + four + five + disa + notify, {
+      $nobyda.notify("", "", Name + one + two + three + four + five + exp + sign + disa + notify, {
         'media-url': $nobyda.headUrl || 'https://cdn.jsdelivr.net/gh/NobyDa/mini@master/Color/jd.png'
       });
       $nobyda.headUrl = null;
       if ($nobyda.isJSBox) {
-        $nobyda.st = (typeof($nobyda.st) == 'undefined' ? '' : $nobyda.st) + Name + one + two + three + four + five + "\n"
+        $nobyda.st = (typeof($nobyda.st) == 'undefined' ? '' : $nobyda.st) + Name + one + two + three + four + five + exp + sign + "\n"
       }
     } catch (eor) {
       $nobyda.notify("通知模块 " + eor.name + "‼️", JSON.stringify(eor), eor.message)
@@ -1920,6 +1923,39 @@ function TotalMoney() {
         }
       } catch (eor) {
         $nobyda.AnError("账户现金-查询", "TotalMoney", eor, response, data)
+      } finally {
+        resolve()
+      }
+    })
+    if (out) setTimeout(resolve, out)
+  });
+}
+
+function BeanDetail() {
+  merge.SignInfo = "";
+  merge.ExpiringInfo = "";
+  return new Promise(resolve => {
+    if (disable("Qbear")) return resolve()
+    $nobyda.post({
+      url: 'https://api.m.jd.com/client.action?functionId=jingBeanDetail&clientVersion=10.2.6&build=91588&client=android&partner=huaweiharmony&oaid=00000000-0000-0000-0000-000000000000&eid=eidAbf28812165s1tB1RMQLWSJeKVoAPKI5mR7QdUqn5yWsbanWZN45Fy8hcyMNni5HNMVdE7acH/Zf2VuU2mhIbyFF6bOAShnCXGMDdZVEE7QL+qo0z&sdkVersion=29&lang=zh_CN&harmonyOs=1&networkType=wifi&uts=0f31TVRjBSsqndu4%2FjgUPz6uymy50MQJElbJQ%2BaR6HcimFImJE0B3ADfeSDsCF%2FmGtVtnoBxr%2Bdj9wznWdOsd9xKoDPUJxJrvdD38MRFWqG%2F9LdXbOjqCbQYrGZ5daozGFp2o2bZ1uP487arbcUUltU1npvI23ciNcGtKpyXLZyyqUmoTNDV%2BXGpfPObFp4OY3bf2wR2yV0X8%2BU6%2FfRpuQ%3D%3D&uemps=0-0&ext=%7B%22prstate%22%3A%220%22%7D&ef=1&ep=%7B%22hdid%22%3A%22JM9F1ywUPwflvMIpYPok0tt5k9kW4ArJEU3lfLhxBqw%3D%22%2C%22ts%22%3A1638944214517%2C%22ridx%22%3A-1%2C%22cipher%22%3A%7B%22area%22%3A%22CJVpCJSnC18nCtO0XzUyDtc0%22%2C%22d_model%22%3A%22HUnJBUPECNK%3D%22%2C%22wifiBssid%22%3A%22EWY2Ctu3YtPwZJHsDWO1ZJq4DNTwD2ZsC2SmCWO5EJu%3D%22%2C%22osVersion%22%3A%22CJK%3D%22%2C%22d_brand%22%3A%22IPVLV0VT%22%2C%22screen%22%3A%22CtG5EIenCtKm%22%2C%22uuid%22%3A%22CzSmZWPwDWGmCWHvDzu1YG%3D%3D%22%2C%22aid%22%3A%22CzSmZWPwDWGmCWHvDzu1YG%3D%3D%22%2C%22openudid%22%3A%22CzSmZWPwDWGmCWHvDzu1YG%3D%3D%22%7D%2C%22ciphertype%22%3A5%2C%22version%22%3A%221.2.0%22%2C%22appname%22%3A%22com.jingdong.app.mall%22%7D&st=1638944220212&sign=99c622caa626cff0983e618db8633c9a&sv=102',
+      body: "body={}",
+      headers: {
+        Cookie: KEY
+      }
+    }, (error, response, data) => {
+      try {
+        if (error) throw new Error(error);
+        const Details = LogDetails ? "response:\n" + data : '';
+        const js = JSON.parse(data)
+        if (js.code == 0) {
+          merge.SignInfo = js.others.jingBeanButton.buttonText || "";
+          merge.ExpiringInfo = js.others.jingBeanExpire.title || "";
+          console.log(`\n京豆详情查询成功 ${Details}`)
+        } else {
+          console.log(`\n京豆详情查询失败 ${data}`)
+        }
+      } catch (eor) {
+        $nobyda.AnError("京豆详情-查询", "BeanDetail", eor, response, data)
       } finally {
         resolve()
       }
