@@ -2,7 +2,7 @@
 
 京东多合一签到脚本
 
-更新时间: 2021.12.08 17:03 v2.3.5
+更新时间: 2021.12.15 21:36 v2.4.0
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 电报频道: @NobyDa
@@ -231,6 +231,7 @@ async function all(cookie, jrBody) {
       await JDShakeBox(Wait(stop)); //会员频道-摇盒子
       await JingDongShake(Wait(stop)); //京东摇一摇
       await JDBeanHomeTask(Wait(stop)); //五签领京豆
+      await JDHuDong(Wait(stop)); //京东互动
       break;
   }
   await Promise.all([
@@ -341,7 +342,7 @@ function notify() {
           }
         }
       } catch (e) {
-        throw new Error(`账号Cookie读取失败, 请检查Json格式. \n${e.message}`)
+        throw new Error(`账号Cookie读取失败, 请检查Json格式. \n${e}`)
       }
     }
     $nobyda.time();
@@ -1244,6 +1245,44 @@ async function JDUserSign2(s, key, title, tid) {
   });
 }
 
+function JDHuDong(s) {
+  return new Promise(resolve => {
+    if (!merge.JDHuDong) merge.JDHuDong = {}, merge.JDHuDong.success = 0, merge.JDHuDong.bean = 0, merge.JDHuDong.notify = '';
+    setTimeout(() => {
+      const req = {
+        url: 'https://api.m.jd.com/interactive_done?functionId=interactive_done&appid=contenth5_common&client=wh5',
+        headers: {
+          Cookie: KEY,
+          Origin: 'https://h5.m.jd.com'
+        },
+        body: `body=${encodeURIComponent(`{"projectId":"rfhKVBToUL4RGuaEo7NtSEUw2bA","assignmentId":"2PbAu1BAT79RxrM5V7c2VAPUQDSd","itemId":"1","type":"5","agid":["05804754","05822013"]}`)}`
+      };
+      $nobyda.post(req, async function(error, response, data) {
+        try {
+          if (error) {
+            throw new Error(error)
+          } else {
+            let js = JSON.parse(data || '{}');
+            if (data.match(/rewardValue/)) { // 得到京豆
+              merge.JDHuDong.success++;
+              merge.JDHuDong.bean = js.data.rewardValue || 0;
+              merge.JDHuDong.notify = `京东互动，领豆成功 ` + js.data.rewardMsg || '';
+            } else {
+              merge.JDHuDong.fail = 1
+              merge.JDHuDong.notify = `京东互动，领豆失败: ${data} ⚠️`
+            }
+          }
+          resolve()
+        } catch (eor) {
+          $nobyda.AnError(title, key, eor, response, data)
+          resolve()
+        }
+      })
+    }, s)
+    if (out) setTimeout(resolve(), out + s)
+  });
+}
+
 function JDFlashSale(s) {
   merge.JDFSale = {};
   return new Promise(resolve => {
@@ -1947,12 +1986,12 @@ function BeanDetail() {
         if (error) throw new Error(error);
         const Details = LogDetails ? "response:\n" + data : '';
         const js = JSON.parse(data)
-        if (js.code == 0) {
+        if (js.code == 0 && !!js.others.jingBeanButton) {
           merge.SignInfo = js.others.jingBeanButton.buttonText || "";
           merge.ExpiringInfo = js.others.jingBeanExpire.title || "";
-          console.log(`\n京豆详情查询成功 ${Details}`)
+          console.log(`\n京豆详情-查询成功 ${Details}`)
         } else {
-          console.log(`\n京豆详情查询失败 ${data}`)
+          console.log(`\n京豆详情-查询失败 ${data}`)
         }
       } catch (eor) {
         $nobyda.AnError("京豆详情-查询", "BeanDetail", eor, response, data)
@@ -2320,7 +2359,7 @@ function nobyda() {
     }
   }
   const AnError = (name, keyname, er, resp, body) => {
-    if (typeof(merge) != "undefined" && keyname) {
+    if (typeof(merge) != "undefined" && typeof(merge[keyname]) != "undefined") {
       if (!merge[keyname].notify) {
         merge[keyname].notify = `${name}: 异常, 已输出日志 ‼️`
       } else {
