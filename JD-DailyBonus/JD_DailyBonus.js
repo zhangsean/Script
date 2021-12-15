@@ -2,7 +2,7 @@
 
 京东多合一签到脚本
 
-更新时间: 2021.12.15 21:36 v2.4.0
+更新时间: 2021.12.16 00:38 v2.5.0
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 电报频道: @NobyDa
@@ -145,6 +145,8 @@ async function all(cookie, jrBody) {
         JingDongShake(stop), //京东摇一摇
         JDSecKilling(stop), //京东秒杀
         JDBeanHomeTask(stop), //五签领京豆
+        JDHuDong(Wait(stop)), //京东互动
+        JDTurntableFarm(Wait(stop)), //京东农场转盘
         // JingRongDoll(stop, 'JRDoll', '京东金融-签壹', '4D25A6F482'),
         // JingRongDoll(stop, 'JRThreeDoll', '京东金融-签叁', '69F5EC743C'),
         // JingRongDoll(stop, 'JRFourDoll', '京东金融-签肆', '30C4F86264'),
@@ -232,6 +234,7 @@ async function all(cookie, jrBody) {
       await JingDongShake(Wait(stop)); //京东摇一摇
       await JDBeanHomeTask(Wait(stop)); //五签领京豆
       await JDHuDong(Wait(stop)); //京东互动
+      await JDTurntableFarm(Wait(stop)); //京东农场转盘
       break;
   }
   await Promise.all([
@@ -736,14 +739,14 @@ function JDShakeBoxTask(s) {
         if (data.match(/\"success\":true/)) {
           let json = JSON.parse(data)
           let tasks = json.data[0].taskItems || [];
-          console.log(`\n会员频道-摇盒子-获取奖励任务 ${tasks.length}个 ${Details}`)
+          console.log(`\n会员频道-摇盒子-获取任务 ${tasks.length}个 ${Details}`)
           resolve(tasks)
         } else {
-          console.log(`\n会员频道-摇盒子-获取奖励任务失败 ${data}`)
+          console.log(`\n会员频道-摇盒子-获取任务失败 ${data}`)
           reject()
         }
       } catch (eor) {
-        $nobyda.AnError("会员频道-摇盒子-获取奖励任务", "JDShakeBoxTask", eor, response, data)
+        $nobyda.AnError("会员频道-摇盒子-获取任务", "JDShakeBoxTask", eor, response, data)
         reject()
       }
     })
@@ -755,7 +758,7 @@ function JDShakeBoxDoTask(s, tasks, i) {
   return new Promise(resolve => {
     let task = tasks[i];
     if (task.finish) {
-      console.log(`\n会员频道-摇盒子-领取抽奖次数: 已领取, 任务: ${task.title}`)
+      console.log(`\n会员频道-摇盒子-已领取次数, 任务: ${task.title}`)
       if (i < tasks.length - 1) {
         JDShakeBoxDoTask(s, tasks, ++i)
       } else {
@@ -966,7 +969,7 @@ function JDBeanHomeTaskAward(s) {
                     msg = '未五签'
                     break;
                 }
-                merge.JDBeanHomeTask.notify = `会员频道-五签: 领豆失败, 原因: ${msg} ❌`
+                merge.JDBeanHomeTask.notify = `会员频道-五签: 领豆失败, 原因: ${msg} 🐶`
               } else {
                 merge.JDBeanHomeTask.notify = `会员频道-五签: 领豆失败, 原因: 未知 ❌`
               }
@@ -981,6 +984,169 @@ function JDBeanHomeTaskAward(s) {
     }, s)
     if (out) setTimeout(resolve, out + s)
   });
+}
+
+function JDTurntableFarm(s) {
+  return new Promise((resolve, reject) => {
+    if (!merge.JDTurntableFarm) merge.JDTurntableFarm = {}, merge.JDTurntableFarm.success = 0, merge.JDTurntableFarm.bean = 0, merge.JDTurntableFarm.notify = '';
+    let act = '京东农场-抽奖: 签到'
+    if (disable("JDTurntableFarm")) return reject()
+    let JDUrl = {
+      url: `https://api.m.jd.com/client.action?functionId=initForTurntableFarm&body={"version":4,"channel":1}&appid=wh5`,
+      headers: {
+        Cookie: KEY
+      }
+    };
+    $nobyda.get(JDUrl, async (error, response, data) => {
+      try {
+        if (error) throw new Error(error)
+        let Details = LogDetails ? "response:\n" + data : ''
+        if (data.match(/code\":\"0/)) {
+          let json = JSON.parse(data)
+          let tasks = json.turntableBrowserAds || [];
+          merge.JDTurntableFarm.success++
+          merge.JDTurntableFarm.notify = `${act}成功, 奖励任务${tasks.length}个 🎉`
+          console.log(`\n${act}成功, 奖励任务${tasks.length}个 ${Details}`)
+          resolve(tasks)
+        } else {
+          merge.JDTurntableFarm.fail++
+          merge.JDTurntableFarm.notify = `${act}失败 ⚠️`
+          console.log(`\n${act}失败 ${data}`)
+          reject()
+        }
+      } catch (eor) {
+        $nobyda.AnError(`${act}`, "JDTurntableFarm", eor, response, data)
+        reject()
+      }
+    })
+    if (out) setTimeout(reject, out + s)
+  }).then(tasks => JDTurntableFarmBrowser(s, tasks, 0, 1));
+}
+
+function JDTurntableFarmBrowser(s, tasks, i, type) {
+  return new Promise(resolve => {
+    let task = tasks[i],
+      act = '京东农场-抽奖-' + (type == 1 ? '浏览抽奖任务' : '领取抽奖次数');
+    if ((type == 1 && task.status) || (type == 2 && task.gotStatus)) {
+      console.log(`\n${act}: 已完成, 任务: ${task.main}`)
+      resolve()
+    } else {
+        setTimeout(() => {
+          let JDUrl = {
+            url: `https://api.m.jd.com/client.action?functionId=browserForTurntableFarm&body={"type":${type},"adId":"${task.adId}","version":4,"channel":1}&appid=wh5`,
+            headers: {
+              Cookie: KEY
+            }
+          };
+          $nobyda.get(JDUrl, function(error, response, data) {
+            try {
+              if (error) {
+                throw new Error(error)
+              } else {
+                let Details = LogDetails ? "response:\n" + data : '';
+                let json = JSON.parse(data)
+                if (data.match(/code\":\"0/)) {
+                  console.log(`\n${act}: 成功, 任务: ${task.main} ${Details}`)
+                  merge.JDTurntableFarm.success++
+                  if (data.match(/totalTimes/)) {
+                    merge.JDTurntableFarm.notify = `${act}: 成功, 总次数: ${json.totalTimes || 0} 🎉`
+                  } else {
+                    merge.JDTurntableFarm.notify = `${act}: 成功 🐶`
+                  }
+                } else {
+                  console.log(`\n${act}: 失败, 任务: ${task.main} ${Details || data}`)
+                  merge.JDTurntableFarm.fail++
+                  if (data.match(/code\":\"7/)) {
+                    merge.JDTurntableFarm.notify += `${act}: 失败, 原因: 已领取 ⚠️`
+                  } else {
+                    merge.JDTurntableFarm.notify += `${act}: 失败, 原因: ${json.message || '未知'} ⚠️`
+                  }
+                }
+              }
+            } catch (eor) {
+              $nobyda.AnError(`${act}`, "JDTurntableFarm", eor, response, data)
+            } finally {
+              resolve()
+            }
+          })
+        }, s)
+        if (out) setTimeout(resolve, out + s)
+    }
+  }).then(()=>{
+    let len = tasks.length - 1
+    if (i < len) {
+      return JDTurntableFarmBrowser(s, tasks, ++i, type)
+    } else if (type == 1 && i == len) {
+      return JDTurntableFarmBrowser(s, tasks, 0, 2)
+    } else {
+      return JDTurntableFarmLottery(s)
+    }
+  });
+}
+
+function JDTurntableFarmLottery(s) {
+  let remainLotteryTimes = 0,
+      act = '京东农场-抽奖'
+  return new Promise(resolve => {
+    if (!merge.JDTurntableFarmLottery) merge.JDTurntableFarmLottery = {}, merge.JDTurntableFarmLottery.success = 0, merge.JDTurntableFarmLottery.bean = 0, merge.JDTurntableFarmLottery.notify = '';
+    if (disable("JDTurntableFarmLottery")) return resolve()
+    setTimeout(() => {
+      const req = {
+        url: 'https://api.m.jd.com/client.action?functionId=lotteryForTurntableFarm&body={"type":1,"version":4,"channel":1}&appid=wh5',
+        headers: {
+          Cookie: KEY,
+          Origin: 'https://h5.m.jd.com'
+        }
+      };
+      $nobyda.post(req, async function(error, response, data) {
+        try {
+          if (error) {
+            throw new Error(error)
+          } else {
+            let Details = LogDetails ? "response:\n" + data : '';
+            let json = JSON.parse(data)
+            let also = merge.JDTurntableFarmLottery.notify ? true : false
+            if (data.match(/code\":\"0/)) {
+              console.log(`\n${act}: 成功 ${Details}`)
+              merge.JDTurntableFarmLottery.success += 1
+              let msg = ''
+              if (json.beanCount) {
+                merge.JDTurntableFarmLottery.bean += json.beanCount || 0
+                msg = `抽中: ${json.beanCount || 0}京豆 🎉`
+              } else if (data.match(/water/)) {
+                msg = `抽中: ${json.waterCount || data}水滴 🐶`
+              } else if (data.match(/thanks/)) {
+                msg = `谢谢 🐶`
+              } else {
+                msg = `其他: ${data}`
+              }
+              merge.JDTurntableFarmLottery.notify += `${also?"\n":''}${act}: ${also?'多次':'成功'}, ${msg}`
+              remainLotteryTimes = json.remainLotteryTimes;
+            } else {
+              console.log(`\n${act}: 失败 ${Details}`)
+              merge.JDTurntableFarmLottery.fail = 1
+              if (data.match(/code\":\"7/)) {
+                merge.JDTurntableFarmLottery.notify = `${act}: 失败, 抽奖次数用完 ⚠️`
+              } else if (data.match(/code\":\"3/)) {
+                merge.JDTurntableFarmLottery.notify = `${act}: 失败, Cookie失效‼️`
+              } else {
+                merge.JDTurntableFarmLottery.notify += `${also?`\n`:``}${act}: ${also?`多次`:`成功`}, 原因: 未知 ⚠️ ${data}`
+              }
+            }
+          }
+        } catch (eor) {
+          $nobyda.AnError("${act}", "JDTurntableFarmLottery", eor, response, data)
+        } finally {
+          resolve()
+        }
+      })
+    }, s + 2000)
+    if (out) setTimeout(resolve, out + s)
+  }).then(()=>{
+    if (remainLotteryTimes > 0) {
+      return JDTurntableFarmLottery(s)
+    }
+  });;
 }
 
 function JDUserSignPre(s, key, title, ac) {
@@ -1265,11 +1431,11 @@ function JDHuDong(s) {
             let js = JSON.parse(data || '{}');
             if (data.match(/rewardValue/)) { // 得到京豆
               merge.JDHuDong.success++;
-              merge.JDHuDong.bean = js.data.rewardValue || 0;
-              merge.JDHuDong.notify = `京东互动，领豆成功 ` + js.data.rewardMsg || '';
+              merge.JDHuDong.bean = js.rewardValue || 0;
+              merge.JDHuDong.notify = `内容鉴赏，领豆成功 ` + js.rewardMsg || '';
             } else {
               merge.JDHuDong.fail = 1
-              merge.JDHuDong.notify = `京东互动，领豆失败: ${data} ⚠️`
+              merge.JDHuDong.notify = `内容鉴赏，领豆失败: ${js.message || data} ⚠️`
             }
           }
           resolve()
