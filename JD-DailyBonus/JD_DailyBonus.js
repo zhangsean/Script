@@ -2,7 +2,7 @@
 
 京东多合一签到脚本
 
-更新时间: 2021.12.16 00:38 v2.5.0
+更新时间: 2021.12.17 09:18 v2.5.1
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 电报频道: @NobyDa
@@ -284,19 +284,19 @@ function notify() {
       var Ts = success ? `成功${success}个${fail||err?`, `:``}` : ``
       var Tf = fail ? `失败${fail}个${err?`, `:``}` : ``
       var Te = err ? `错误${err}个` : ``
-      var one = `【签到概览】:  ${Ts+Tf+Te}${Ts||Tf||Te?`\n`:`获取失败\n`}`
-      var two = Tbean || TSteel ? `【签到奖励】:  ${Tbean+TSteel}\n` : ``
-      var three = TCash || TSubsidy || TMoney ? `【其他奖励】:  ${TCash+TSubsidy+TMoney}\n` : ``
-      var four = `【账号总计】:  ${beans+Steel}${beans||Steel?`\n`:`获取失败\n`}`
-      var five = `【其他总计】:  ${Subsidy+Money+Cash}${Subsidy||Money||Cash?`\n`:`获取失败\n`}`
-      var exp = `【即将过期】:  ${merge.ExpiringInfo||'获取失败'}\n`
-      var sign = `【连签天数】:  ${merge.SignInfo||'获取失败'}\n`
+      var one = `【签到概览】${Ts+Tf+Te}${Ts||Tf||Te?`\n`:`获取失败\n`}`
+      var two = Tbean || TSteel ? `【签到奖励】${Tbean+TSteel}\n` : ``
+      var three = TCash || TSubsidy || TMoney ? `【其他奖励】${TCash+TSubsidy+TMoney}\n` : ``
+      var four = `【账号总计】${beans+Steel}${beans||Steel?`\n`:`获取失败\n`}`
+      var five = `【其他总计】${Subsidy+Money+Cash}${Subsidy||Money||Cash?`\n`:`获取失败\n`}`
+      var exp = `【即将过期】${merge.ExpiringInfo||'获取失败'}\n`
+      var sign = `【连签天数】${merge.SignInfo||'获取失败'}\n`
       var DName = merge.TotalBean && merge.TotalBean.nickname ? merge.TotalBean.nickname : "获取失败"
       var cnNum = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
-      const Name = DualKey || OtherKey.length > 1 ? `【签到号${cnNum[$nobyda.num]||$nobyda.num}】:  ${DName}\n` : ``
+      const Name = DualKey || OtherKey.length > 1 ? `【签到号${cnNum[$nobyda.num]||$nobyda.num}】${DName}\n` : ``
       const disables = $nobyda.read("JD_DailyBonusDisables")
       const amount = disables ? disables.split(",").length : 0
-      const disa = !notify || amount ? `【温馨提示】:  检测到${$nobyda.disable?`上次执行意外崩溃, `:``}已禁用${notify?`${amount}个`:`所有`}接口, 如需开启请前往BoxJs或查看脚本内第118行注释.\n` : ``
+      const disa = !notify || amount ? `【温馨提示】检测到${$nobyda.disable?`上次执行意外崩溃, `:``}已禁用${notify?`${amount}个`:`所有`}接口, 如需开启请前往BoxJs或查看脚本内第118行注释.\n` : ``
       $nobyda.notify("", "", Name + one + two + three + four + five + exp + sign + disa + notify, {
         'media-url': $nobyda.headUrl || 'https://cdn.jsdelivr.net/gh/NobyDa/mini@master/Color/jd.png'
       });
