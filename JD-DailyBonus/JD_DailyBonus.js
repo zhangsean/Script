@@ -2,7 +2,7 @@
 
 京东多合一签到脚本
 
-更新时间: 2021.12.17 09:18 v2.5.1
+更新时间: 2021.12.17 v2.5.2
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 电报频道: @NobyDa
@@ -1114,7 +1114,7 @@ function JDTurntableFarmLottery(s) {
                 merge.JDTurntableFarmLottery.bean += json.beanCount || 0
                 msg = `抽中: ${json.beanCount || 0}京豆 🎉`
               } else if (data.match(/water/)) {
-                msg = `抽中: ${json.waterCount || data}水滴 🐶`
+                msg = `抽中: ${json.addWater || 0}水滴 🐶`
               } else if (data.match(/thanks/)) {
                 msg = `谢谢 🐶`
               } else {
