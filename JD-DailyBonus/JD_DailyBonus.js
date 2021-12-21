@@ -2,7 +2,7 @@
 
 京东多合一签到脚本
 
-更新时间: 2021.12.17 v2.5.2
+更新时间: 2021.12.21 v2.6.0
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 电报频道: @NobyDa
@@ -179,6 +179,8 @@ async function all(cookie, jrBody) {
         JDUserSignPre(stop, 'JDClean', '京东商城-清洁', '2Tjm6ay1ZbZ3v7UbriTj6kHy9dn6'), //京东清洁馆
         JDUserSignPre(stop, 'JDCare', '京东商城-个护', '2tZssTgnQsiUqhmg5ooLSHY9XSeN'), //京东个人护理馆
         JDUserSignPre(stop, 'JDJiaDian', '京东商城-家电', '3uvPyw1pwHARGgndatCXddLNUxHw'), // 京东小家电
+        doInteractiveAssignment(stop, 'interactiveShoe', '互动签到-鞋靴', '4BDaij5FgN9ByaSmjmaKhCTf38ZF', '2Vnhdjd4xe5sXPeyuFjVyodd81Mv'), //互动签到-鞋靴
+        doInteractiveAssignment(stop, 'interactiveBox', '互动签到-箱包', '3VNTkAme1TAfHM1EBv8JxpJcRXZt', '4DRdr2xFMKHWzS4nCUTGJqaX4eQa'), //互动签到-箱包
         // JDUserSignPre(stop, 'JDJewels', '京东商城-珠宝', 'zHUHpTHNTaztSRfNBFNVZscyFZU'), //京东珠宝馆
         // JDUserSignPre(stop, 'JDMakeup', '京东商城-美妆', '2smCxzLNuam5L14zNJHYu43ovbAP'), //京东美妆馆
         JDUserSignPre(stop, 'JDVege', '京东商城-菜场', 'Wcu2LVCFMkBP3HraRvb7pgSpt64'), //京东菜场
@@ -212,7 +214,8 @@ async function all(cookie, jrBody) {
       await JDUserSignPre(Wait(stop), 'JDClothing', '京东商城-服饰', '4RBT3H9jmgYg1k2kBnHF8NAHm7m8'); //京东服饰
       await JDUserSignPre(Wait(stop), 'JDSchool', '京东商城-校园', '2QUxWHx5BSCNtnBDjtt5gZTq7zdZ'); //京东校园
       // await JDUserSignPre(Wait(stop), 'JDHealth', '京东商城-健康', 'w2oeK5yLdHqHvwef7SMMy4PL8LF'); //京东健康
-      // await JDUserSignPre(Wait(stop), 'JDShoes', '京东商城-鞋靴', '4RXyb1W4Y986LJW8ToqMK14BdTD'); //京东鞋靴
+      await doInteractiveAssignment(Wait(stop), 'interactiveShoe', '互动签到-鞋靴', '4BDaij5FgN9ByaSmjmaKhCTf38ZF', '2Vnhdjd4xe5sXPeyuFjVyodd81Mv'); //互动签到-鞋靴
+      await doInteractiveAssignment(Wait(stop), 'interactiveBox', '互动签到-箱包', '3VNTkAme1TAfHM1EBv8JxpJcRXZt', '4DRdr2xFMKHWzS4nCUTGJqaX4eQa'); //互动签到-箱包
       // await JDUserSignPre(Wait(stop), 'JDChild', '京东商城-童装', '3Af6mZNcf5m795T8dtDVfDwWVNhJ'); //京东童装馆
       await JDUserSignPre(Wait(stop), 'JDBaby', '京东商城-母婴', '3BbAVGQPDd6vTyHYjmAutXrKAos6'); //京东母婴馆
       await JDUserSignPre(Wait(stop), 'JD3C', '京东商城-数码', '4SWjnZSCTHPYjE5T7j35rxxuMTb6'); //京东数码电器馆
@@ -1436,6 +1439,46 @@ function JDHuDong(s) {
             } else {
               merge.JDHuDong.fail = 1
               merge.JDHuDong.notify = `内容鉴赏，领豆失败: ${js.message || data} ⚠️`
+            }
+          }
+          resolve()
+        } catch (eor) {
+          $nobyda.AnError(title, key, eor, response, data)
+          resolve()
+        }
+      })
+    }, s)
+    if (out) setTimeout(resolve(), out + s)
+  });
+}
+
+function doInteractiveAssignment(s, key, title, projectId, assignmentId) {
+  return new Promise(resolve => {
+    if (!merge[key]) merge[key] = {}, merge[key].success = 0, merge[key].bean = 0, merge[key].notify = '';
+    setTimeout(() => {
+      const req = {
+        url: 'https://api.m.jd.com/client.action?functionId=doInteractiveAssignment',
+        headers: {
+          Cookie: KEY,
+          Origin: 'https://pro.m.jd.com'
+        },
+        body: `appid=babelh5&sign=11&body=${encodeURIComponent(`{"encryptProjectId":"${projectId}","encryptAssignmentId":"${assignmentId}","completionFlag":true,"itemId":"1","sourceCode":"aceaceqingzhan"}`)}`
+      };
+      $nobyda.post(req, async function(error, response, data) {
+        try {
+          if (error) {
+            throw new Error(error)
+          } else {
+            let js = JSON.parse(data || '{}')
+            let qty = data.match(/quantity\":\d+/)
+            if (qty != null && qty.length > 0) { // 得到京豆
+              qty = parseInt(qty[0].split(':')[1])
+              merge[key].success++
+              merge[key].bean += qty || 0
+              merge[key].notify += `\n${title}，领豆成功: ${qty || 0} 🎉`
+            } else {
+              merge[key].fail++
+              merge[key].notify += `\n${title}，领豆失败: ${js.msg || data} ⚠️`
             }
           }
           resolve()
