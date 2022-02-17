@@ -2,7 +2,7 @@
 
 京东多合一签到脚本
 
-更新时间: 2021.12.21 v2.6.0
+更新时间: 2022.02.17 v2.6.1
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 电报频道: @NobyDa
@@ -1435,10 +1435,10 @@ function JDHuDong(s) {
             if (data.match(/rewardValue/)) { // 得到京豆
               merge.JDHuDong.success++;
               merge.JDHuDong.bean = js.rewardValue || 0;
-              merge.JDHuDong.notify = `内容鉴赏，领豆成功 ` + js.rewardMsg || '';
+              merge.JDHuDong.notify = `内容鉴赏: 领豆成功: ${merge.JDHuDong.bean}京豆 🎉`;
             } else {
               merge.JDHuDong.fail = 1
-              merge.JDHuDong.notify = `内容鉴赏，领豆失败: ${js.message || data} ⚠️`
+              merge.JDHuDong.notify = `内容鉴赏: 领豆失败: ${js.message || data} ⚠️`
             }
           }
           resolve()
