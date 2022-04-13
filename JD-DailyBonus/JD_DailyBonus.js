@@ -2,7 +2,7 @@
 
 京东多合一签到脚本
 
-更新时间: 2022.02.17 v2.6.1
+更新时间: 2022.04.13 v2.6.2
 有效接口: 20+
 脚本兼容: QuantumultX, Surge, Loon, JSBox, Node.js
 电报频道: @NobyDa
@@ -825,7 +825,7 @@ function JDShakeBoxLottery(s) {
     if (disable("JDShakeBoxLottery")) return resolve()
     setTimeout(() => {
       const JDSh = {
-        url: 'https://api.m.jd.com/?appid=sharkBean&functionId=vvipclub_shaking_lottery&body={}',
+        url: 'https://api.m.jd.com/?appid=sharkBean&functionId=vvipclub_shaking_lottery&body={}&h5st=20220413143410698%3B0395677486464240%3B28cc6%3Btk02we1b51d3418nnLwAIwuyMGpgRzxqGCUBUCucbsmJX6efQfn3RdWlG8bKoHKPGXRgf0%2B6ysPraq3gJBxyAOiIluOG%3Baf2d12c317ac7fa72504f60e8cda6984a3f47a3348b374480d50c34426218f92%3B3.0%3B1649831650698',
         headers: {
           Cookie: KEY,
           Origin: 'https://spa.jd.com'
